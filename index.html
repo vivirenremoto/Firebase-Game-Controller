@@ -6,6 +6,12 @@
     <meta name="robots" content="noindex,nofollow">
 
     <style>
+        .prevent-select {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
+        }
+
         h1 {
             font-family: verdana, sans-serif;
             font-weight: bold;
@@ -73,7 +79,7 @@
 <body>
 
 
-<div id="Box" style="font-family:arial;background:#ccc;position:fixed;left:0;top:0;width:100%;height:100%;font-size:20px;display: flex;align-items: center;justify-content: center;text-align:center;">
+<div id="Box" class="prevent-select" style="font-family:arial;background:#ccc;position:fixed;left:0;top:0;width:100%;height:100%;font-size:20px;display: flex;align-items: center;justify-content: center;text-align:center;">
 Loading
 </div>
 
