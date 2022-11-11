@@ -101,7 +101,6 @@ var config = {
 };
 
 var database;
-var firebase_loaded = false;
 var box = document.getElementById("Box");
 </script>
 
@@ -162,12 +161,7 @@ var box = document.getElementById("Box");
                 positionY2 = parseInt(positionY);
 
 
-                if( firebase_loaded == false ){
-                    firebase_loaded = true;
-                    box.style.backgroundColor = "green";
-                    box.style.color = "white";
-                    box.innerHTML = 'Ready! Move the phone and click he device to do some action in game';
-                }                
+           
 
                 if( positionX2 != prev_x || positionY2 != prev_y || shoot != prev_shoot ){
                     prev_x = positionX2;
@@ -199,9 +193,11 @@ var box = document.getElementById("Box");
         }else{
 
             box.style.backgroundColor = "yellow";
-            box.innerHTML = '<table><tr><td>Put the phone on the table</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
+            box.innerHTML = '<table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
 
 
+            firebase.initializeApp(config);
+            database = firebase.database();
 
 
         }
@@ -211,14 +207,21 @@ var box = document.getElementById("Box");
         box.style.backgroundColor = "#ccc";
         box.innerHTML = 'Loading Firebase';
 
-        firebase.initializeApp(config);
-        database = firebase.database();
 
+        setTimeout(function(){
+            if( firebase.apps.length == 1 ){
+                box.style.backgroundColor = "green";
+                box.style.color = "white";
+                box.innerHTML = 'Ready! Move the phone and click he device to do some action in game';
+            }
+        }, 2000);
 
         initialX = null;
         initialY = null;
         
     }
+
+
 
 
     // Webkit en Mozilla variant beide registreren.
