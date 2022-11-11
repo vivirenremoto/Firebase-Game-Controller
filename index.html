@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Accelerometer gameplay</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <meta name="robots" content="noindex,nofollow">
+
+    <style>
+        h1 {
+            font-family: verdana, sans-serif;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        p {
+            font-family: verdana, sans-serif;
+            font-size: 12px;
+        }
+
+        #canvas {
+            width: 200px;
+            height: 200px;
+
+            border: 5px solid #ddd;
+            border-radius: 10px;
+            -moz-border-radius: 10px;
+        }
+
+        #middle {
+            background-color: #aaa;
+            position: relative;
+            width: 4px;
+            height: 4px;
+            left: 98px;
+            top: 98px;
+        }
+
+        #ball {
+            background-color: #aaa;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            left: 90px;
+            top: 90px;
+
+            border-radius: 20px;
+            -moz-border-radius: 20px;
+
+            box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+            -moz-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+            -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+
+            background-image: -moz-linear-gradient(top, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 12px);
+            background-image: -webkit-gradient(linear, 0 0, 0 12, from(rgba(255, 255, 255, .5)), to(rgba(255, 255, 255, 0)));
+        }
+
+        #warning {
+            display: none;
+            padding: 5px 10px;
+            font-weight: bold;
+
+            border-radius: 5px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+
+            color: black;
+            background-color: #FDFFBF;
+            border: 1px solid #D7DE07;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="Box" style="font-family:arial;background:#ccc;position:fixed;left:0;top:0;width:100%;height:100%;font-size:20px;display: flex;align-items: center;justify-content: center;text-align:center;">
+Loading
+</div>
+
+<p id="warning"></p>
+
+<div id="canvas" style="position:fixed;z-index:1;">
+    <div id="middle"></div>
+    <div id="ball"></div>
+</div>
+
+
+
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"></script>
+<script>
+var config = {
+  apiKey: atob("QUl6YVN5QzhBTVRIZkNGMTd4bnJwRVg1Y1gtOWFzeHVBbE1VNTBR"),
+  authDomain: "spartan-calling-798.firebaseapp.com",
+  databaseURL: atob("aHR0cHM6Ly9zcGFydGFuLWNhbGxpbmctNzk4LmZpcmViYXNlaW8uY29t"),
+};
+
+var database;
+var firebase_loaded = false;
+var box = document.getElementById("Box");
+</script>
+
+<script>
+
+
+    var initialX = null;
+    var initialY = null;
+    var prev_x = null;
+    var prev_y = null;
+    var prev_shoot = 0;
+    var shoot = 0;
+
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const username = urlParams.get('username')
+
+
+    var ball = document.getElementById('ball');
+
+    document.addEventListener("touchstart", function(){
+        shoot = 1;
+    });
+
+
+    document.addEventListener("touchend", function(){
+        shoot = 0;
+    });
+
+
+
+    function handleOrientationEvent(event) {
+
+        var x = event.beta ? event.beta : event.y * 90;
+        var y = event.gamma ? event.gamma : event.x * 90;
+
+        window.console && console.info('Raw position: x, y: ', x, y);
+
+        if (!initialX && !initialY) {
+
+            initialX = x;
+            initialY = y;
+
+        } else {
+
+            var positionX = initialX - x;
+            var positionY = initialY - y;
+
+            ball.style.top = (90 + positionX * 5) + 'px';
+            ball.style.left = (90 + positionY * 5) + 'px';
+        
+
+
+            
+            if( firebase.apps.length == 1 ){
+                positionX2 = parseInt(positionX);
+                positionY2 = parseInt(positionY);
+
+
+                if( firebase_loaded == false ){
+                    firebase_loaded = true;
+                    box.style.backgroundColor = "green";
+                    box.style.color = "white";
+                    box.innerHTML = 'Ready! Move the phone and click he device to do some action in game';
+                }                
+
+                if( positionX2 != prev_x || positionY2 != prev_y || shoot != prev_shoot ){
+                    prev_x = positionX2;
+                    prev_y = positionY2;
+                    prev_shoot = shoot;
+                                        
+                    var data = {
+                        "x":positionY2,//positionX, 
+                        "y":positionX2,//positionY
+                        "shoot": shoot,
+                        "active": 1
+                    };
+                    database.ref('users').child(username).set(data);
+
+
+                }
+            }
+        
+        }
+    }
+
+    function isEventFired() {
+        if ( !initialX && !initialY) {
+        
+            
+            box.style.backgroundColor = "yellow";
+            box.innerHTML = 'Not compatible try with firefox';
+
+        }else{
+
+            box.style.backgroundColor = "yellow";
+            box.innerHTML = '<table><tr><td>Put the phone on the table</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
+
+
+
+
+        }
+    }
+    
+    function LoadFirebase(){
+        box.style.backgroundColor = "#ccc";
+        box.innerHTML = 'Loading Firebase';
+
+        firebase.initializeApp(config);
+        database = firebase.database();
+
+
+        initialX = null;
+        initialY = null;
+        
+    }
+
+
+    // Webkit en Mozilla variant beide registreren.
+    window.addEventListener("MozOrientation", handleOrientationEvent, true);
+    window.addEventListener("deviceorientation", handleOrientationEvent, true);
+
+    setTimeout(isEventFired, 2000);
+
+</script>
+
+
+</body>
+</html>
