@@ -209,16 +209,37 @@ var box = document.getElementById("Box");
         firebase.initializeApp(config);
         database = firebase.database();
 
-        setTimeout(function(){
-            if( firebase.apps.length == 1 ){
+
+
+        
+
+
+        var data = {
+            "x":0, 
+            "y":0,
+            "shoot":0,
+            "active":0
+        };
+        database.ref('users').child(username).set(data, function(error){
+            if(error){
+                box.style.backgroundColor = "red";
+                box.innerHTML = 'Something is wrong with Firebase';
+
+            }else{
+           
+                initialX = null;
+                initialY = null;
+
                 box.style.backgroundColor = "green";
                 box.style.color = "white";
                 box.innerHTML = 'Ready! Move the phone and click he device to do some action in game';
             }
-        }, 2000);
 
-        initialX = null;
-        initialY = null;
+        });
+
+
+
+
         
     }
 
