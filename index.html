@@ -196,8 +196,6 @@ var box = document.getElementById("Box");
             box.innerHTML = '<table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
 
 
-            firebase.initializeApp(config);
-            database = firebase.database();
 
 
         }
@@ -207,6 +205,9 @@ var box = document.getElementById("Box");
         box.style.backgroundColor = "#ccc";
         box.innerHTML = 'Loading Firebase';
 
+
+        firebase.initializeApp(config);
+        database = firebase.database();
 
         setTimeout(function(){
             if( firebase.apps.length == 1 ){
