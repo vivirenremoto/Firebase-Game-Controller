@@ -79,13 +79,25 @@
 <body>
 
 
-<div id="Box" class="prevent-select" style="font-family:arial;background:#ccc;position:fixed;left:0;top:0;width:100%;height:100%;font-size:20px;display: flex;align-items: center;justify-content: center;text-align:center;">
-Loading
+
+<div id="Controls" style="border:2px black solid;border-width:2px 0;display:none;z-index:1;position:fixed;left:0;bottom:0;width:100%;text-align:center;background:#000;">
+  
+  <button onclick="Stabilize();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:33%;background:#efefef;color:black;">STABILIZE</button>
+  <button id="Stabilize_value" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:none;color:white;">1</button>
+  <button onclick="MoreSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#c9ff67;color:black;">+</button>
+  <button onclick="LessSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#f09d9d;color:black;">-</button>
+
+</div>
+
+<div id="Box" class="prevent-select" style="font-family:arial;background:yellow;position:fixed;left:0;top:0;width:100%;height:100%;font-size:20px;display: flex;align-items: center;justify-content: center;text-align:center;">
+
+  <table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="Start();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>  
+
 </div>
 
 <p id="warning"></p>
 
-<div id="canvas" style="position:fixed;z-index:1;">
+<div id="canvas" style="display:none;position:fixed;z-index:2;top:15px;">
     <div id="middle"></div>
     <div id="ball"></div>
 </div>
@@ -102,11 +114,14 @@ var config = {
 
 var database;
 var box = document.getElementById("Box");
+var canvas = document.getElementById("canvas");
+var controls = document.getElementById("Controls");
+var stabilize_value = document.getElementById("Stabilize_value");
 </script>
 
 <script>
 
-
+    var sensitivity = 1;
     var initialX = null;
     var initialY = null;
     var prev_x = null;
@@ -122,12 +137,12 @@ var box = document.getElementById("Box");
 
     var ball = document.getElementById('ball');
 
-    document.addEventListener("touchstart", function(){
+    box.addEventListener("touchstart", function(){
         shoot = 1;
     });
 
 
-    document.addEventListener("touchend", function(){
+    box.addEventListener("touchend", function(){
         shoot = 0;
     });
 
@@ -137,6 +152,8 @@ var box = document.getElementById("Box");
 
         var x = event.beta ? event.beta : event.y * 90;
         var y = event.gamma ? event.gamma : event.x * 90;
+
+        x = x * sensitivity;
 
         window.console && console.info('Raw position: x, y: ', x, y);
 
@@ -188,12 +205,14 @@ var box = document.getElementById("Box");
         
             
             box.style.backgroundColor = "yellow";
-            box.innerHTML = 'Not compatible try with firefox';
+            box.innerHTML = 'Browser not compatible';
 
         }else{
 
-            box.style.backgroundColor = "yellow";
-            box.innerHTML = '<table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
+            //box.style.backgroundColor = "yellow";
+            //box.innerHTML = '<table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
+
+            LoadFirebase();
 
 
 
@@ -201,6 +220,14 @@ var box = document.getElementById("Box");
         }
     }
     
+    function LoadSensor(){
+
+      canvas.style.display='block';
+      box.style.backgroundColor = "#ccc";
+      box.innerHTML = 'Check sensor';
+      setTimeout(isEventFired, 2000);
+    }
+
     function LoadFirebase(){
         box.style.backgroundColor = "#ccc";
         box.innerHTML = 'Loading Firebase';
@@ -209,7 +236,7 @@ var box = document.getElementById("Box");
         firebase.initializeApp(config);
         database = firebase.database();
 
-
+        controls.style.display = "block";
 
         
 
@@ -243,14 +270,58 @@ var box = document.getElementById("Box");
         
     }
 
+    function Start(){
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // Handle iOS 13+ devices.
+        DeviceMotionEvent.requestPermission()
+          .then((state) => {
+            if (state === 'granted') {
+              //window.addEventListener('devicemotion', handleOrientation);
+              window.addEventListener("devicemotion", handleOrientationEvent, true);
+              LoadSensor();
+
+            } else {
+              box.style.backgroundColor = "yellow";
+              box.innerHTML = '<table><tr><td>Request to access the orientation was rejected</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="Start();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
+            }
+          })
+          .catch(console.error);
+      } else {
+
+        // Handle regular non iOS 13+ devices.
+        //window.addEventListener('devicemotion', handleOrientation);
+      
+        window.addEventListener("MozOrientation", handleOrientationEvent, true);
+        window.addEventListener("deviceorientation", handleOrientationEvent, true);
+        LoadSensor();
+
+      }
+    }
+
+    function Stabilize(){
+        initialX = null;
+        initialY = null;
+    }
+
+    function MoreSensitivity(){
+      sensitivity += 0.05;
+      stabilize_value.innerHTML = sensitivity;
+    }
+
+    function LessSensitivity(){
+      sensitivity -= 0.05;
+      stabilize_value.innerHTML = sensitivity;
+    }
 
 
 
     // Webkit en Mozilla variant beide registreren.
-    window.addEventListener("MozOrientation", handleOrientationEvent, true);
-    window.addEventListener("deviceorientation", handleOrientationEvent, true);
+    //window.addEventListener("MozOrientation", handleOrientationEvent, true);
+    //window.addEventListener("deviceorientation", handleOrientationEvent, true);
 
-    setTimeout(isEventFired, 2000);
+    //setTimeout(isEventFired, 2000);
+
+
 
 </script>
 
