@@ -202,7 +202,8 @@ var stabilize_value = document.getElementById("Stabilize_value");
     }
 
     function isEventFired() {
-        if ( !initialX && !initialY) {
+        if(!window.DeviceOrientationEvent) {
+        //if ( !initialX && !initialY) {
         
             
             box.style.backgroundColor = "yellow";
@@ -277,8 +278,8 @@ var stabilize_value = document.getElementById("Stabilize_value");
         DeviceMotionEvent.requestPermission()
           .then((state) => {
             if (state === 'granted') {
-              //window.addEventListener('devicemotion', handleOrientation);
-              window.addEventListener("devicemotion", handleOrientationEvent, true);
+              window.addEventListener('deviceorientation', handleOrientation);
+              //window.addEventListener("devicemotion", handleOrientationEvent, true);
               LoadSensor();
 
             } else {
@@ -292,7 +293,8 @@ var stabilize_value = document.getElementById("Stabilize_value");
         // Handle regular non iOS 13+ devices.
         //window.addEventListener('devicemotion', handleOrientation);
       
-        window.addEventListener("MozOrientation", handleOrientationEvent, true);
+        //window.addEventListener("MozOrientation", handleOrientationEvent, true);
+        //window.addEventListener("devicemotion", handleOrientationEvent, true);
         window.addEventListener("deviceorientation", handleOrientationEvent, true);
         LoadSensor();
 
