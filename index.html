@@ -225,11 +225,12 @@ var stabilize_value = document.getElementById("Stabilize_value");
 
     function isEventFired() {
         if(!window.DeviceOrientationEvent) {
-        //if ( !initialX && !initialY) {
-        
             
+
             box.style.backgroundColor = "yellow";
-            box.innerHTML = 'Browser not compatible';
+            box.innerHTML = '<table><tr><td>Browser not compatible</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="location.reload();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">TRY AGAIN</button></td></tr></table>';
+            
+
 
         }else{
 
@@ -272,8 +273,8 @@ var stabilize_value = document.getElementById("Stabilize_value");
         };
         database.ref('users').child(username).set(data, function(error){
             if(error){
-                box.style.backgroundColor = "red";
-                box.innerHTML = 'Something is wrong with Firebase';
+                box.style.backgroundColor = "yellow";
+                box.innerHTML = '<table><tr><td>' + error + '</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="location.reload();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">TRY AGAIN</button></td></tr></table>';
 
             }else{
            
@@ -298,18 +299,13 @@ var stabilize_value = document.getElementById("Stabilize_value");
         // Handle iOS 13+ devices.
         DeviceOrientationEvent.requestPermission()
           .then(response => {
-            alert('----permisos-----'+response+'----');
+
             if (response == 'granted') {
                 
-              alert('----1111----');
-
               LoadSensor();
 
-              
-              alert('----22222----');
               window.addEventListener('deviceorientation', handleOrientationEvent, true);
 
-              alert('----3333----');
 
             } else {
               box.style.backgroundColor = "yellow";
@@ -317,7 +313,9 @@ var stabilize_value = document.getElementById("Stabilize_value");
             }
           })
           .catch (error => {
-            alert('error: ' + error);
+            box.style.backgroundColor = "yellow";
+            box.innerHTML = '<table><tr><td>' + error + '</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="location.reload();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">TRY AGAIN</button></td></tr></table>';
+            
         });
       } else {
         window.addEventListener("deviceorientation", handleOrientationEvent, true);
