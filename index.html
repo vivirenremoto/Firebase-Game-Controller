@@ -294,11 +294,11 @@ var stabilize_value = document.getElementById("Stabilize_value");
     }
 
     function Start(){
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         // Handle iOS 13+ devices.
-        DeviceMotionEvent.requestPermission()
-          .then((state) => {
-            if (state === 'granted') {
+        DeviceOrientationEvent.requestPermission()
+          .then(response => {
+            if (response == 'granted') {
               window.addEventListener('deviceorientation', handleOrientation);
               LoadSensor();
 
