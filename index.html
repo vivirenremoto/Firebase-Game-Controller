@@ -80,12 +80,18 @@
 
 
 
-<div id="Controls" style="border:2px black solid;border-width:2px 0;display:none;z-index:1;position:fixed;left:0;bottom:0;width:100%;text-align:center;background:#000;">
-  
-  <button onclick="Stabilize();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:33%;background:#efefef;color:black;">STABILIZE</button>
-  <button id="Stabilize_value" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:none;color:white;">1</button>
-  <button onclick="MoreSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#c9ff67;color:black;">+</button>
-  <button onclick="LessSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#f09d9d;color:black;">-</button>
+    
+<div id="Modes" style="border:2px black solid;border-width:2px 0;display:none;z-index:1;position:fixed;left:0;top:0;width:100%;text-align:center;background:#000;">
+    <button id="btn_mode_portait" onclick="SetMode('portait');" style="font-weight:bold;padding:10px 0;border:0;text-align:center;width:49%;background:#efefef;color:black;"><img src="img/portait.png" width="24" height="24"></button>
+    <button id="btn_mode_steering_wheel" onclick="SetMode('steering_wheel');" style="font-weight:bold;padding:10px 0;border:0;text-align:center;width:49%;background:#c9ff67;color:black;"><img src="img/steering_wheel.png" width="24" height="24"></button>
+</div>
+
+<div id="Controls" style="border:2px black solid;border-width:2px 0;display:none;z-index:1;position:fixed;left:0;bottom:0;width:100%;text-align:center;background:#000;">    
+
+    <button onclick="Stabilize();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:33%;background:#efefef;color:black;">STABILIZE</button>
+    <button id="Stabilize_value" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:none;color:white;">1</button>
+    <button onclick="MoreSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#c9ff67;color:black;">+</button>
+    <button onclick="LessSensitivity();" style="font-weight:bold;padding:10px 0;border:0;font-size:20px;text-align:center;width:20%;background:#f09d9d;color:black;">-</button>
 
 </div>
 
@@ -97,7 +103,7 @@
 
 <p id="warning"></p>
 
-<div id="canvas" style="display:none;position:fixed;z-index:2;top:15px;">
+<div id="canvas" style="display:none;position:fixed;z-index:2;top:60px;">
     <div id="middle"></div>
     <div id="ball"></div>
 </div>
@@ -115,12 +121,14 @@ var config = {
 var database;
 var box = document.getElementById("Box");
 var canvas = document.getElementById("canvas");
+var modes = document.getElementById("Modes");
 var controls = document.getElementById("Controls");
 var stabilize_value = document.getElementById("Stabilize_value");
 </script>
 
 <script>
 
+    var mode = "portait";
     var sensitivity = 1;
     var initialX = null;
     var initialY = null;
@@ -134,6 +142,13 @@ var stabilize_value = document.getElementById("Stabilize_value");
     const urlParams = new URLSearchParams(queryString);
     const username = urlParams.get('username')
     var ball = document.getElementById('ball');
+
+    var mode_aux = getCookie("mode");
+    if( mode_aux != "" ){
+        mode = mode_aux;
+    }
+
+    UpdateMode();
 
     var sensitivity_aux = getCookie("sensitivity");
     if( sensitivity_aux != "" ){
@@ -151,8 +166,15 @@ var stabilize_value = document.getElementById("Stabilize_value");
 
     function handleOrientationEvent(event) {
 
-        var x = event.beta ? event.beta : event.y * 90;
-        var y = event.gamma ? event.gamma : event.x * 90;
+        if( mode == 'steering_wheel'){
+            var y = event.beta;
+            var x = event.gamma * -1;
+        }else{
+            var x = event.beta;
+            var y = event.gamma;
+        }
+
+        
 
         x = x * sensitivity;
 
@@ -187,8 +209,8 @@ var stabilize_value = document.getElementById("Stabilize_value");
                     prev_shoot = shoot;
                                         
                     var data = {
-                        "x":positionY2,//positionX, 
-                        "y":positionX2,//positionY
+                        "x":positionY2,
+                        "y":positionX2,
                         "shoot": shoot,
                         "active": 1
                     };
@@ -211,9 +233,7 @@ var stabilize_value = document.getElementById("Stabilize_value");
 
         }else{
 
-            //box.style.backgroundColor = "yellow";
-            //box.innerHTML = '<table><tr><td>Put the phone on the table and then press the button</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="LoadFirebase();" style="font-size:20px;font-family:arial;background:green;border:0;padding:20p;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
-
+   
             LoadFirebase();
 
 
@@ -238,6 +258,7 @@ var stabilize_value = document.getElementById("Stabilize_value");
         firebase.initializeApp(config);
         database = firebase.database();
 
+        modes.style.display = "block";
         controls.style.display = "block";
 
         
@@ -279,7 +300,6 @@ var stabilize_value = document.getElementById("Stabilize_value");
           .then((state) => {
             if (state === 'granted') {
               window.addEventListener('deviceorientation', handleOrientation);
-              //window.addEventListener("devicemotion", handleOrientationEvent, true);
               LoadSensor();
 
             } else {
@@ -289,12 +309,6 @@ var stabilize_value = document.getElementById("Stabilize_value");
           })
           .catch(console.error);
       } else {
-
-        // Handle regular non iOS 13+ devices.
-        //window.addEventListener('devicemotion', handleOrientation);
-      
-        //window.addEventListener("MozOrientation", handleOrientationEvent, true);
-        //window.addEventListener("devicemotion", handleOrientationEvent, true);
         window.addEventListener("deviceorientation", handleOrientationEvent, true);
         LoadSensor();
 
@@ -307,13 +321,13 @@ var stabilize_value = document.getElementById("Stabilize_value");
     }
 
     function MoreSensitivity(){
-      sensitivity += 0.05;
+      sensitivity += 0.1;
       sensitivity = Math.round(sensitivity * 100) / 100;
       UpdateSensitivity();
     }
 
     function LessSensitivity(){
-      sensitivity -= 0.05;
+      sensitivity -= 0.1;
       sensitivity = Math.round(sensitivity * 100) / 100;
       UpdateSensitivity();
     }
@@ -344,6 +358,22 @@ var stabilize_value = document.getElementById("Stabilize_value");
             }
         }
         return "";
+    }
+
+    function UpdateMode(){
+        var btn_mode_portait = document.getElementById("btn_mode_portait");
+        var btn_mode_steering_wheel = document.getElementById("btn_mode_steering_wheel");
+        
+        btn_mode_portait.style.backgroundColor = '#efefef';
+        btn_mode_steering_wheel.style.backgroundColor = '#efefef';
+        document.getElementById("btn_mode_"+mode).style.backgroundColor = 'yellow';
+    }
+
+    function SetMode(value){
+        mode = value;
+        setCookie("mode", mode, 365);
+        Stabilize();
+        UpdateMode();
     }
 </script>
 
