@@ -298,16 +298,27 @@ var stabilize_value = document.getElementById("Stabilize_value");
         // Handle iOS 13+ devices.
         DeviceOrientationEvent.requestPermission()
           .then(response => {
+            alert('----permisos-----'+response+'----');
             if (response == 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation);
+                
+              alert('----1111----');
+
               LoadSensor();
+
+              
+              alert('----22222----');
+              window.addEventListener('deviceorientation', handleOrientation);
+
+              alert('----3333----');
 
             } else {
               box.style.backgroundColor = "yellow";
               box.innerHTML = '<table><tr><td>Request to access the orientation was rejected</td></tr><tr><td>&nbsp;</td></tr><tr><td><button onclick="Start();" style="font-size:20px;font-family:arial;background:green;border:0;padding:15px 0;color:white;display:block;width:80%;margin:auto;">CONTINUE</button></td></tr></table>';
             }
           })
-          .catch(console.error);
+          .catch (error => {
+            alert('error: ' + error);
+        });
       } else {
         window.addEventListener("deviceorientation", handleOrientationEvent, true);
         LoadSensor();
